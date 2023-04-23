@@ -70,6 +70,8 @@ def check_word_pattern(word: str, pattern: str) -> bool:
     for word_char, pattern_char in zip(word, pattern):
         if pattern_char != '_' and pattern_char != word_char:
             return False
+        if pattern_char == '_' and word_char in pattern:
+            return False
 
     return True
 
