@@ -3,6 +3,7 @@ import sys
 import Utils
 
 def hangman(file_path: str):
+    os.system('cls' if os.name == 'nt' else 'clear')  # clear the console
     print("\033[92mStarting new game...\033[0m")
     print("----------------------")
     try:
