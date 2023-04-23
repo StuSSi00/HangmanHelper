@@ -190,3 +190,18 @@ def sort_guesses_by_entropy(wordlist: set[str], current_pattern: str, possible_g
     guesses_entropy = [(guess, get_entropy(get_all_patterns(wordlist, current_pattern, guess))) for guess in possible_guesses]
     
     return sorted(guesses_entropy, key=lambda g: g[1], reverse=True)
+
+def get_possible_guesses(wordlist: set[str]) -> set[str]:
+    """Return a set of all the unique characters in a given wordlist.
+
+    Parameters
+    ----------
+    wordlist : set[str]
+        The set of words to extract unique characters from.
+
+    Returns
+    -------
+    set[str]
+        The set of unique characters extracted from the input wordlist.
+    """
+    return {char for word in wordlist for char in word}
