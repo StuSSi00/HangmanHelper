@@ -12,6 +12,7 @@ def hangman(file_path: str):
         return
     attemps = 0
     ask_pattern = True
+    guessed_letters = set()
 
     while True:
         # ask for the pattern
@@ -27,6 +28,7 @@ def hangman(file_path: str):
         # guess a letter
         print("\033[93mGetting possible guesses...\033[0m")
         possible_guesses = Utils.get_possible_guesses(wordlist)
+        possible_guesses.difference_update(guessed_letters)
         print("\033[93mComputing best guess...\033[0m")
         best_guesses = Utils.sort_guesses_by_entropy(wordlist, pattern, possible_guesses)
 
@@ -38,6 +40,7 @@ def hangman(file_path: str):
 
         if correct == 'y':
             ask_pattern = True
+            guessed_letters.add(best_guesses[0][0])
         else:
             ask_pattern = False
             print("\033[93mFiltering words...\033[0m")
