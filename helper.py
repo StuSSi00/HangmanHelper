@@ -19,6 +19,8 @@ def hangman(file_path: str):
         # ask for the pattern
         if ask_pattern: 
             pattern = input("Enter the pattern: ")
+            if "_" not in pattern:
+                return
             print("\033[93mFiltering words...\033[0m")
             wordlist = Utils.filter_words_by_pattern(wordlist, pattern)
         
