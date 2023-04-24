@@ -42,11 +42,11 @@ def get_word_pattern(word: str, prev_pattern: str, guess: str) -> str:
     str
         The new pattern for the word.
     """
-    if not prev_pattern:
-        prev_pattern = '_' * len(word)
     
     if prev_pattern:
         return ''.join(char if char == guess else prev_char for char, prev_char in zip(word, prev_pattern))
+    else:
+        return '_' * len(word)
 
 def check_word_pattern(word: str, pattern: str) -> bool:
     """Check if a given word matches a given pattern, where '_' can match any character.
@@ -136,6 +136,7 @@ def get_all_patterns(wordlist: set[str], current_pattern: str, guess: str) -> di
     possible_patterns : dict[str, int]
         possible patterns as keys and their count as values.
     """
+    
     possible_patterns = {}
     for word in wordlist:
         pattern = get_word_pattern(word, current_pattern, guess)
@@ -162,6 +163,7 @@ def get_entropy(possible_patterns: dict[str, int]) -> float:
     ZeroDivisionError
         If the total count of possible patterns is zero.
     """
+    
     total_words_count = sum(possible_patterns.values())
     
     entropy = 0
@@ -172,7 +174,7 @@ def get_entropy(possible_patterns: dict[str, int]) -> float:
         
     return entropy
 
-def sort_guesses_by_entropy(wordlist: set[str], current_pattern: str, possible_guesses: set[str]) -> list[tuple[str, int]]:
+def sort_guesses_by_entropy(wordlist: set[str], current_pattern: str, possible_guesses: set[str]) -> list[tuple[str, float]]:
     """Sort possible guesses based on their entropy score.
 
     Parameters
@@ -186,9 +188,10 @@ def sort_guesses_by_entropy(wordlist: set[str], current_pattern: str, possible_g
 
     Returns
     -------
-    list[tuple[str, int]]
+    list[tuple[str, float]]
         possible guesses and their corresponding entropy score, sorted by descending entropy score.
     """
+    
     guesses_entropy = [(guess, get_entropy(get_all_patterns(wordlist, current_pattern, guess))) for guess in possible_guesses]
     
     return sorted(guesses_entropy, key=lambda g: g[1], reverse=True)
@@ -206,4 +209,30 @@ def get_possible_guesses(wordlist: set[str]) -> set[str]:
     set[str]
         The set of unique characters extracted from the input wordlist.
     """
+    
     return {char for word in wordlist for char in word}
+
+def validate_new_pattern(prev_pattern: str, new_pattern: str) -> bool:
+    """Check if a new pattern is valid based on a previous pattern.
+
+    Parameters
+    ----------
+    prev_pattern : str
+        The previous pattern to compare against.
+    new_pattern : str
+        The new pattern to validate.
+
+    Returns
+    -------
+    bool
+        True if the new pattern is valid, False otherwise.
+    """
+    
+    if len(prev_pattern) != len(new_pattern):
+        return False
+    
+    for prev, new in zip(prev_pattern, new_pattern):
+        if prev != new and "_" not in (prev, new):
+            return False
+        
+    return True

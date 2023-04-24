@@ -1,72 +1,74 @@
 import os
-import sys
+import typer
+
 import Utils
 
-def hangman(file_path: str):
+app = typer.Typer()
+
+@app.command()
+def hangman(file_path: str = typer.Argument(..., help="File path containing the list of words.")) -> None:
+    """Play a game of hangman by guessing a hidden word.
+
+    Parameters
+    ----------
+    file_path : str
+        File path containing the list of words.
+    """
     os.system('cls' if os.name == 'nt' else 'clear')  # clear the console
-    print("\033[92mStarting new game...\033[0m")
-    print("----------------------")
+    typer.secho("Starting new game...", fg=typer.colors.GREEN)
+    typer.echo("----------------------")
     try:
         wordlist = Utils.get_words_from_file(file_path)
     except FileNotFoundError:
-        print(f"\033[91mError: file '{file_path}' not found.\033[0m")
+        typer.secho(f"Error: file '{file_path}' not found.", fg=typer.colors.RED)
         return
-    attemps = 0
+    attempts = 0
     
-    pattern = input("Enter the pattern: ")
+    pattern = typer.prompt(typer.style("Enter the pattern: ", fg=typer.colors.MAGENTA))
     if "_" not in pattern:
         input()
         return
-    print("\033[93mFiltering words...\033[0m")
+    typer.secho("Filtering words...", fg=typer.colors.YELLOW)
     
     wordlist = Utils.filter_words_by_pattern(wordlist, pattern)
     guessed_letters = set()
 
     while True:
         if len(wordlist) == 1:
-            print(f"\033[92mThe hidden word is: {list(wordlist)[0]}\033[0m")
+            typer.secho(f"The hidden word is: {list(wordlist)[0]}", fg=typer.colors.GREEN)
+            input()
+            return
+        
+        elif len(wordlist) == 0:
+            typer.secho(f"The hidden word is'nt in the wordlist.", fg=typer.colors.RED)
             input()
             return
         
         # guess a letter
-        print("\033[93mGetting possible guesses...\033[0m")
+        typer.secho("Getting possible guesses...", fg=typer.colors.YELLOW)
         possible_guesses = Utils.get_possible_guesses(wordlist)
         possible_guesses.difference_update(guessed_letters)
-        print("\033[93mComputing best guess...\033[0m")
+        typer.secho("Computing best guess...", fg=typer.colors.YELLOW)
         best_guesses = Utils.sort_guesses_by_entropy(wordlist, pattern, possible_guesses)
 
         # print the guess and ask if it's correct
-        print(f"\033[96mBest guess is '{best_guesses[0][0]}'.\033[0m")
-        correct = input("Enter new patter if yes: ")
+        typer.secho(f"Best guess is '{best_guesses[0][0]}'.", fg=typer.colors.CYAN)
+        correct = typer.prompt(typer.style("Enter new pattern if yes: ", fg=typer.colors.MAGENTA))
+        if correct and not Utils.validate_new_pattern(pattern, correct):
+            typer.secho("Error: the pattern is'nt valid.", fg=typer.colors.RED)
         
         os.system('cls' if os.name == 'nt' else 'clear')  # clear the console
 
         if correct:
             pattern = correct
-            print("\033[93mFiltering words...\033[0m")
+            typer.secho("Filtering words...", fg=typer.colors.YELLOW)
             wordlist = Utils.filter_words_by_pattern(wordlist, pattern)
             guessed_letters.add(best_guesses[0][0])
         else:
-            ask_pattern = False
-            print("\033[93mFiltering words...\033[0m")
+            typer.secho("Filtering words...", fg=typer.colors.YELLOW)
             wordlist = Utils.filter_words_by_excluded_letter(wordlist, best_guesses[0][0])
             
-            attemps += 1
-            
-def get_all_starts(wordlist):
-    starts = set()
-    
-    for word in wordlist:
-        pattern = '_' * len(word)
-        pattern2 = Utils.get_word_pattern(word, pattern, word[0])
-        pattern2 = Utils.get_word_pattern(word, pattern2, word[-1])
-        starts.update((pattern, pattern2))
-        
-    return starts
-            
+            attempts += 1
+
 if __name__ == "__main__":
-    while True:
-        if len(sys.argv) != 2:
-            print("\033[91mError: missing file path argument.\033[0m")
-        else:
-            hangman(sys.argv[1])
+    app() 
